@@ -153,26 +153,41 @@ class Report(FPDF):
 
     def callout(self, title, lines):
         """Professional highlighted callout box."""
-        self.ln(2)
+        self.ln(3)
         y0 = self.get_y()
-        # Background
-        self.set_fill_color(250,250,252)
+        pad = 3  # internal padding in mm
+        box_w = self.w - self.l_margin - self.r_margin
+
+        # Calculate actual height needed
+        title_h = 6
+        line_h = 5.5
+        text_height = title_h + len(lines) * line_h + pad * 2
+
+        # Draw filled rectangle with red border
+        self.set_fill_color(250, 250, 252)
         self.set_draw_color(*HW_RED)
-        # Estimate height
-        est_h = 8 + len(lines)*5.5 + 4
-        self.rect(self.l_margin,y0,self.w-self.l_margin-self.r_margin,est_h,style="DF")
-        self.set_x(self.l_margin+3)
-        self.ln(2)
-        self.set_font("Helvetica","B",10)
+        self.set_line_width(0.4)
+        self.rect(self.l_margin, y0, box_w, text_height, style="DF")
+        self.set_line_width(0.2)  # reset
+
+        # Position text inside the box with padding
+        self.set_xy(self.l_margin + pad, y0 + pad)
+
+        # Title line
+        self.set_font("Helvetica", "B", 10)
         self.set_text_color(*HW_RED)
-        self.cell(0,5,title,new_x="LMARGIN",new_y="NEXT")
-        self.set_x(self.l_margin+3)
-        self.set_font("Helvetica","",8.5)
+        self.cell(box_w - pad * 2, title_h, title, new_x="LMARGIN", new_y="NEXT")
+
+        # Content lines
+        self.set_x(self.l_margin + pad)
+        self.set_font("Helvetica", "", 8.5)
         self.set_text_color(*HW_DARK)
         for line in lines:
-            self.cell(0,5,line,new_x="LMARGIN",new_y="NEXT")
-            self.set_x(self.l_margin+3)
-        self.ln(3)
+            self.cell(box_w - pad * 2, line_h, line, new_x="LMARGIN", new_y="NEXT")
+            self.set_x(self.l_margin + pad)
+
+        # Move y below the box
+        self.set_y(y0 + text_height + 2)
 
     # ---- COVER PAGE ----
     def cover_page(self):
